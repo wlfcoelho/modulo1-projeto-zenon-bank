@@ -9,9 +9,8 @@ O objetivo é consolidar os conhecimentos adquiridos em aula através de um cen�
 * API de Collections e Streams.
 * Manipulação de I/O de arquivos grandes.
 * Tratamento de Exceções.
-* Concorrência e Paralelismo.
 * Integração com Banco de Dados.
-* Integração com Sistemas Legados via arquivos posicionais.
+* Concorrência e Paralelismo.
 
 Siga o passo a passo do quadro de atividades (Trello) do projeto prático dessa disciplina, disponível nos vídeos de projeto prático da disciplina.
 
@@ -20,4 +19,4 @@ Siga o passo a passo do quadro de atividades (Trello) do projeto prático dessa 
 * **Git e GitHub**: para controle de versões e portifólio de repositórios.
 * **Java JDK**: 25 (LTS).
 * **IDE**: IntelliJ IDEA ou Eclipse.
-* **Docker**: Para a tarefa de Banco de Dados.
+* **Docker e Docker Compose**: Para a tarefa de Banco de Dados.
