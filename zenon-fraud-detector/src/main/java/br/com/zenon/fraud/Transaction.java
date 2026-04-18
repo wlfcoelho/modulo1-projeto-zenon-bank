@@ -12,6 +12,6 @@ public record Transaction(
         String nameDest,
         BigDecimal oldbalanceDest,
         BigDecimal newbalanceDest,
-        int isFraud,
-        int isFlaggedFraud) {
+        Boolean isFraud,
+        Boolean isFlaggedFraud) {
 }
