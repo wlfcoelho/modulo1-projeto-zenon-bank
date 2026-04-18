@@ -1,44 +1,45 @@
 package br.com.zenon.fraud;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.lang.foreign.SymbolLookup;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class TransactionIngestor {
 
-    public static List<Transaction> ingest( String path) throws FileNotFoundException {
+    private static final Logger logger = Logger.getLogger(TransactionIngestor.class.getName());
 
-
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
-
-        String linha;
-        int contador = 0;
+    public static List<Transaction> ingest(String path) throws IOException {
         List<Transaction> transactions = new ArrayList<>();
-        while (true) {
-            
-            try {
-                if ((linha = bufferedReader.readLine()) == null) break;
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path))) {
+            String line;
+            int contador = 0;
+            while ((line = bufferedReader.readLine()) != null) {
+                contador++;
+                if (contador > 1000) break;
+                if (contador == 1) continue;
 
-                if (contador >= 1 && contador <= 1000){
-                    String campo[] = linha.split(",");
-                    int step  = Integer.parseInt(campo[0]);
-                    String transactionType = campo[1];
-                    BigDecimal amount = new BigDecimal(campo[2]);
-                    String nameOrig = campo[3];
-                    BigDecimal oldbalanceOrg = new BigDecimal(campo[4]);
-                    BigDecimal newbalanceOrig = new BigDecimal(campo[5]);
-                    String nameDest = campo[6];
-                    BigDecimal oldbalanceDest = new BigDecimal(campo[7]);
-                    BigDecimal newbalanceDest = new BigDecimal(campo[8]);
-                    int isFraud = Integer.parseInt(campo[9]);
-                    int isFlaggedFraud = Integer.parseInt(campo[10]);
+                try {
+                    String[] campo = line.split(",");
+                    int step = Integer.parseInt(campo[0].trim());
+                    TransactionType transactionType = TransactionType.valueOf(campo[1].trim());
+                    BigDecimal amount = new BigDecimal(campo[2].trim());
+                    String nameOrig = campo[3].trim();
+                    BigDecimal oldbalanceOrg = new BigDecimal(campo[4].trim());
+                    BigDecimal newbalanceOrig = new BigDecimal(campo[5].trim());
+                    String nameDest = campo[6].trim();
+                    BigDecimal oldbalanceDest = new BigDecimal(campo[7].trim());
+                    BigDecimal newbalanceDest = new BigDecimal(campo[8].trim());
+                    int isFraud = Integer.parseInt(campo[9].trim());
+                    int isFlaggedFraud = Integer.parseInt(campo[10].trim());
 
                     Transaction transaction = new Transaction(
                             step,
-                            TransactionType.valueOf(transactionType),
+                            transactionType,
                             amount,
                             nameOrig,
                             oldbalanceOrg,
@@ -46,20 +47,23 @@ public class TransactionIngestor {
                             nameDest,
                             oldbalanceDest,
                             newbalanceDest,
-                            isFraud,
-                            isFlaggedFraud
+                            verifFraud(isFraud),
+                            verifFraud(isFlaggedFraud)
                     );
 
                     transactions.add(transaction);
+                } catch (Exception e) {
+                    logger.warning("Error parsing line " + contador + ": " + e.getMessage());
                 }
-
-                contador++;
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
-
-
         return transactions;
+    }
+
+    private static Boolean verifFraud(int value) {
+        if (value == 1) {
+            return true;
+        }
+        return false;
     }
 }
