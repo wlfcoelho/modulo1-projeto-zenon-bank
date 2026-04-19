@@ -20,7 +20,7 @@ public class TransactionIngestor {
             int contador = 0;
             while ((line = bufferedReader.readLine()) != null) {
                 contador++;
-                if (contador > 1000) break;
+                if (contador > 50000) break;
                 if (contador == 1) continue;
 
                 try {
