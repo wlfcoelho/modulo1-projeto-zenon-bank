@@ -53,7 +53,7 @@ public class TransactionIngestor {
 
                     transactions.add(transaction);
                 } catch (Exception e) {
-                    logger.warning("Error parsing line " + contador + ": " + e.getMessage());
+                    logger.warning("Error: " + line + ": " + e);
                 }
             }
         }
