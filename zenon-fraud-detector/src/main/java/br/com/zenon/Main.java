@@ -1,8 +1,6 @@
 package br.com.zenon;
 
 import br.com.zenon.fraud.*;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -11,12 +9,18 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         System.out.println("Inicio==============================");
-        List<Transaction> transactionsList = TransactionIngestor.ingest("zenon-fraud-detector/data/PS_20174392719_1491204439457_log.csv");
+
+        TransactionIngestor transactionIngestor = new TransactionIngestor();
+
+        List<Transaction> transactionsList = transactionIngestor.read("zenon-fraud-detector/data/PS_20174392719_1491204439457_log.csv");
         System.out.println("Number of transactions ingested: " + transactionsList.size());
+
+        transactionsList.stream().limit(10).forEach(System.out::println);
+
         //FraudAnalyzer.isFraud(transactionsList);
         //System.out.println("First 10 transactions:");
 
-        TransactionRepository repository = new TransactionListRepository(transactionsList);
+       /* TransactionRepository repository = new TransactionListRepository(transactionsList);
 
         testSearch(repository, "C1231006815");
         testSearch(repository, "C12345");
@@ -37,13 +41,13 @@ public class Main {
 
         printResult("Map", worstCaseOrigin, mapResult, endMap - startMap);
 
-        /*for (int i = 0; i < 100000 && i < transactionsList.size(); i++) {
+        *//*for (int i = 0; i < 100000 && i < transactionsList.size(); i++) {
             System.out.println(transactionsList.get(i));
-        }*/
-        /*for (int i = 0; i < transactions.size(); i++) {
+        }*//*
+        *//*for (int i = 0; i < transactions.size(); i++) {
             System.out.println(transactions.get(i));
-        }*/
-        System.out.println("Fim==============================");
+        }*//*
+        System.out.println("Fim==============================");*/
     }
 
     private static void testSearch(TransactionRepository repository, String originName) {
