@@ -24,7 +24,7 @@ public class FraudAnalyzer {
         transactionsList.stream()
                 .filter(transaction -> transaction.isFraud().equals(true))
                 .sorted((t1, t2) -> t2.amount().compareTo(t1.amount()))
-                .map(Transaction::nameOrig)
+                .map(Transaction::customerOrigin)
                 .distinct()
                 .limit(5)
                 .forEach(System.out::println);

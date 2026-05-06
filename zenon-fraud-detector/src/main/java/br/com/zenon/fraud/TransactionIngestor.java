@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.foreign.SymbolLookup;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -12,58 +14,38 @@ import java.util.logging.Logger;
 public class TransactionIngestor {
 
     private static final Logger logger = Logger.getLogger(TransactionIngestor.class.getName());
+    
+    public List<Transaction> read(String filePath) {
+        Path path = Path.of(filePath);
+        try {
 
-    public static List<Transaction> ingest(String path) throws IOException {
-        List<Transaction> transactions = new ArrayList<>();
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path))) {
-            String line;
-            int contador = 0;
-            while ((line = bufferedReader.readLine()) != null) {
-                contador++;
-                if (contador > 100000) break;
-                if (contador == 1) continue;
-
-                try {
-                    String[] campo = line.split(",");
-                    int step = Integer.parseInt(campo[0].trim());
-                    TransactionType transactionType = TransactionType.valueOf(campo[1].trim());
-                    BigDecimal amount = new BigDecimal(campo[2].trim());
-                    String nameOrig = campo[3].trim();
-                    BigDecimal oldbalanceOrg = new BigDecimal(campo[4].trim());
-                    BigDecimal newbalanceOrig = new BigDecimal(campo[5].trim());
-                    String nameDest = campo[6].trim();
-                    BigDecimal oldbalanceDest = new BigDecimal(campo[7].trim());
-                    BigDecimal newbalanceDest = new BigDecimal(campo[8].trim());
-                    int isFraud = Integer.parseInt(campo[9].trim());
-                    int isFlaggedFraud = Integer.parseInt(campo[10].trim());
-
-                    Transaction transaction = new Transaction(
-                            step,
-                            transactionType,
-                            amount,
-                            nameOrig,
-                            oldbalanceOrg,
-                            newbalanceOrig,
-                            nameDest,
-                            oldbalanceDest,
-                            newbalanceDest,
-                            verifFraud(isFraud),
-                            verifFraud(isFlaggedFraud)
-                    );
-
-                    transactions.add(transaction);
-                } catch (Exception e) {
-                    logger.warning("Error: " + line + ": " + e);
-                }
-            }
+            List<String> lines = Files.readAllLines(path);
+            return lines.stream()
+                    .skip(1)
+                    .limit(1000)
+                    .map(this::parseTransaction)
+                    .toList();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading file: " + path, e);
         }
-        return transactions;
-    }
-
-    private static Boolean verifFraud(int value) {
-        if (value == 1) {
-            return true;
-        }
-        return false;
-    }
 }
+
+    private Transaction parseTransaction(String s) {
+
+        String[] fields = s.split(",");
+
+        int step = Integer.parseInt(fields[0]);
+        TransactionType type = TransactionType.valueOf(fields[1]);
+        BigDecimal amount = new BigDecimal(fields[2]);
+        TransactionCustomer customerOrigin = new TransactionCustomer(
+                fields[3], new BigDecimal(fields[4]), new BigDecimal(fields[5]));
+        TransactionCustomer customerDestination = new TransactionCustomer(
+                fields[6], new BigDecimal(fields[7]), new BigDecimal(fields[8]));
+        boolean isFraud = "1".equals(fields[9]);
+        boolean isFlaggedFraud = "1".equals(fields[10]);
+
+        return new Transaction(step, type, amount, customerOrigin, customerDestination, isFraud, isFlaggedFraud);
+
+    }
+    }
