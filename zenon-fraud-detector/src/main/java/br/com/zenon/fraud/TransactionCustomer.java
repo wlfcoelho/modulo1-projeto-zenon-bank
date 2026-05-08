@@ -14,11 +14,14 @@ public class TransactionCustomer {
         Objects.requireNonNull(oldBalance, "oldBalance should not be null");
         Objects.requireNonNull(newBalance, "newBalance should not be null");
 
-        if (oldBalance.compareTo(BigDecimal.ZERO) < 0) {
+        if (oldBalance.signum() < 0) {
             throw new IllegalArgumentException("amount should be positive: " + oldBalance);
         }
-        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+        if (newBalance.signum() < 0) {
             throw new IllegalArgumentException("amount should be positive: " + newBalance);
+        }
+        if (name.trim().isEmpty()) {
+            throw new IllegalArgumentException("name should not be empty");
         }
     }
 

@@ -22,7 +22,7 @@ public record Transaction(
             throw new IllegalArgumentException("step should be positive: " + step);
         }
 
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+        if (amount.signum() < 0) {
             throw new IllegalArgumentException("amount should be positive: " + amount);
         }
 
