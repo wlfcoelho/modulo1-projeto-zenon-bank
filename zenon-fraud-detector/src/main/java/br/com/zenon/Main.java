@@ -1,6 +1,7 @@
 package br.com.zenon;
 
 import br.com.zenon.fraud.*;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,11 @@ public class Main {
         System.out.println("Number of transactions ingested: " + transactionsList.size());
 
         transactionsList.stream().limit(10).forEach(System.out::println);
+
+
+        List<Transaction> transactionsBdList = transactionIngestor.read("zenon-fraud-detector/data/paysim_with_bad_data.csv");
+        System.out.println("Number of transactions ingested from paysim_with_bad_data.cvs: " + transactionsBdList.size());
+        transactionsList.forEach(System.out::println);
 
         //FraudAnalyzer.isFraud(transactionsList);
         //System.out.println("First 10 transactions:");
