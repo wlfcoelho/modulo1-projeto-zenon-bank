@@ -9,7 +9,7 @@ public class TransactionCustomer {
     private BigDecimal oldBalance;
     private BigDecimal newBalance;
 
-    public TransactionCustomer() {
+    public TransactionCustomer(String name, BigDecimal oldBalance, BigDecimal newBalance) {
         Objects.requireNonNull(name, "nameOrig should not be null");
         Objects.requireNonNull(oldBalance, "oldBalance should not be null");
         Objects.requireNonNull(newBalance, "newBalance should not be null");
@@ -23,9 +23,10 @@ public class TransactionCustomer {
         if (name.trim().isEmpty()) {
             throw new IllegalArgumentException("name should not be empty");
         }
-    }
 
-    public TransactionCustomer(String field, BigDecimal bigDecimal, BigDecimal bigDecimal1) {
+        this.name = name;
+        this.oldBalance = oldBalance;
+        this.newBalance = newBalance;
     }
 
     public String getName() {
@@ -37,6 +38,5 @@ public class TransactionCustomer {
     public BigDecimal getNewBalance() {
         return newBalance;
     }
-
 
 }

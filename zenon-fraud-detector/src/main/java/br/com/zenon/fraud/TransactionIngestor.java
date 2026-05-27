@@ -24,7 +24,7 @@ public class TransactionIngestor {
             List<String> lines = Files.readAllLines(path);
             return lines.stream()
                     .skip(1)
-                    .limit(1000)
+                    .limit(500000)
                     .map(this::parseTransaction)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
@@ -52,7 +52,7 @@ public class TransactionIngestor {
             return Optional.of(new Transaction(step, type, amount, customerOrigin, customerDestination, isFraud, isFlaggedFraud));
         } catch (Exception e) {
             System.err.println("Error parsing transaction: " + s + " - " + e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 }

@@ -3,57 +3,45 @@ package br.com.zenon;
 import br.com.zenon.fraud.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-
         System.out.println("Inicio==============================");
 
         TransactionIngestor transactionIngestor = new TransactionIngestor();
 
         List<Transaction> transactionsList = transactionIngestor.read("zenon-fraud-detector/data/PS_20174392719_1491204439457_log.csv");
-        System.out.println("Number of transactions ingested: " + transactionsList.size());
 
         transactionsList.stream().limit(10).forEach(System.out::println);
 
 
-        List<Transaction> transactionsBdList = transactionIngestor.read("zenon-fraud-detector/data/paysim_with_bad_data.csv");
-        System.out.println("Number of transactions ingested from paysim_with_bad_data.cvs: " + transactionsBdList.size());
-        transactionsList.forEach(System.out::println);
+        List<Transaction> transactionsBadList = transactionIngestor.read("zenon-fraud-detector/data/paysim_with_bad_data.csv");
+        System.out.println("Number of transactions ingested from paysim_with_bad_data.cvs: " + transactionsBadList.size());
+        transactionsBadList.stream().limit(10).forEach(System.out::println);
 
-        //FraudAnalyzer.isFraud(transactionsList);
-        //System.out.println("First 10 transactions:");
+        System.out.println("Inicio==============================");
+        var fraudAnalizer = new FraudAnalyzer(transactionsList);
+        long fraudeCounts = fraudAnalizer.countFrauds();
+        System.out.println("Total de fraudes: " + fraudeCounts);
 
-       /* TransactionRepository repository = new TransactionListRepository(transactionsList);
+        List<Transaction> listHighestValueFrauds = fraudAnalizer.findHighestValueFrauds(3);
+        listHighestValueFrauds.stream().map(Transaction::amount).forEach(amount -> System.out.printf("- %.2f%n", amount));
 
-        testSearch(repository, "C1231006815");
-        testSearch(repository, "C12345");
+        List<String> suspiciousCLients = fraudAnalizer.findTopSuspiciousClients(5);
+        System.out.println("Top 5 clientes suspeitos:");
+        suspiciousCLients.forEach(System.out::println);
 
-        String worstCaseOrigin = "C1868032458";
+        BigDecimal totalLoss = fraudAnalizer.calculateTotalFraudsLoss();
+        System.out.println("Total de perdas: " + totalLoss);
 
-        long startList = System.nanoTime();
-        Optional<Transaction> listResult = repository.findByNameOrig(worstCaseOrigin);
-        long endList = System.nanoTime();
+        Map<TransactionType, Long> fraudCountByType =  fraudAnalizer.countFraudsType();
+        System.out.println("Contagem de fraudes por tipo:");
+        fraudCountByType.forEach((type, count) -> System.out.println(type + ": " + count));
 
-        printResult("Lista", worstCaseOrigin, listResult, endList - startList);
-
-        TransactionRepository mapRepository = new TransactionMapRepository(transactionsList);
-
-        long startMap = System.nanoTime();
-        Optional<Transaction> mapResult = mapRepository.findByNameOrig(worstCaseOrigin);
-        long endMap = System.nanoTime();
-
-        printResult("Map", worstCaseOrigin, mapResult, endMap - startMap);
-
-        *//*for (int i = 0; i < 100000 && i < transactionsList.size(); i++) {
-            System.out.println(transactionsList.get(i));
-        }*//*
-        *//*for (int i = 0; i < transactions.size(); i++) {
-            System.out.println(transactions.get(i));
-        }*//*
-        System.out.println("Fim==============================");*/
     }
 
     private static void testSearch(TransactionRepository repository, String originName) {

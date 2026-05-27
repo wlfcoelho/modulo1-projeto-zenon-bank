@@ -25,7 +25,6 @@ public record Transaction(
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("amount should be positive: " + amount);
         }
-
     }
 }
 
