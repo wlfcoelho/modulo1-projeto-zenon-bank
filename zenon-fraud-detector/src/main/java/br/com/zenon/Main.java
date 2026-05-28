@@ -28,30 +28,45 @@ public class Main {
         long fraudeCounts = fraudAnalizer.countFrauds();
         System.out.println("Total de fraudes: " + fraudeCounts);
 
+        System.out.println("Inicio==============================");
         List<Transaction> listHighestValueFrauds = fraudAnalizer.findHighestValueFrauds(3);
         listHighestValueFrauds.stream().map(Transaction::amount).forEach(amount -> System.out.printf("- %.2f%n", amount));
 
+        System.out.println("Inicio==============================");
         List<String> suspiciousCLients = fraudAnalizer.findTopSuspiciousClients(5);
         System.out.println("Top 5 clientes suspeitos:");
         suspiciousCLients.forEach(System.out::println);
 
+        System.out.println("Inicio==============================");
         BigDecimal totalLoss = fraudAnalizer.calculateTotalFraudsLoss();
         System.out.println("Total de perdas: " + totalLoss);
 
+        System.out.println("Inicio==============================");
         Map<TransactionType, Long> fraudCountByType =  fraudAnalizer.countFraudsType();
         System.out.println("Contagem de fraudes por tipo:");
         fraudCountByType.forEach((type, count) -> System.out.println(type + ": " + count));
 
-    }
+        System.out.println("Inicio==============================");
+        TransactionRepository transactionRepository;
 
-    private static void testSearch(TransactionRepository repository, String originName) {
-        Optional<Transaction> result = repository.findByNameOrig(originName);
+        transactionRepository = new TransactionListRepository(transactionsList);
+        String nameNotExist = "NonExistingClient";
+        transactionRepository.findByOriginName(nameNotExist).ifPresentOrElse(System.out::println, () -> System.out.println("Transação não encontrada para o cliente " + nameNotExist));
 
-        if (result.isPresent()) {
-            System.out.println(result.get());
-        } else {
-            System.out.println("Transação não encontrada para o cliente " + originName);
-        }
+        long start = System.nanoTime();
+        String nameExist = "C1868032458";
+        transactionRepository.findByOriginName(nameExist).ifPresentOrElse(System.out::println, () -> System.out.println("Transação não encontrada para o cliente " + nameExist));
+        long endTime = System.nanoTime();
+        long elapsedNanos = endTime - start;
+        System.out.println("Tempo de busca - List (ms): " + (elapsedNanos / 1000000.0) + " ms");
+
+
+        transactionRepository = new TransactionMapRepository(transactionsList);
+        start = System.nanoTime();
+        transactionRepository.findByOriginName(nameExist).ifPresentOrElse(System.out::println, () -> System.out.println("Transação não encontrada para o cliente " + nameExist));
+        endTime = System.nanoTime();
+        elapsedNanos = endTime - start;
+        System.out.println("Tempo de busca - ListMap (ms): " + (elapsedNanos / 1000000.0) + " ms");
     }
 
     private static void printResult(
