@@ -15,8 +15,8 @@ public class Main {
         TransactionIngestor transactionIngestor = new TransactionIngestor();
 
         List<Transaction> transactionsList = transactionIngestor.read("zenon-fraud-detector/data/PS_20174392719_1491204439457_log.csv");
-
         transactionsList.stream().limit(10).forEach(System.out::println);
+        System.out.println(transactionsList.size());
 
 
         List<Transaction> transactionsBadList = transactionIngestor.read("zenon-fraud-detector/data/paysim_with_bad_data.csv");
