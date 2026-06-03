@@ -22,9 +22,10 @@ public class TransactionIngestor {
         try {
 
             List<String> lines = Files.readAllLines(path);
+            int maxSize = 100000;
             return lines.stream()
                     .skip(1)
-                    .limit(100000)
+                    .limit(maxSize)
                     .map(this::parseTransaction)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
