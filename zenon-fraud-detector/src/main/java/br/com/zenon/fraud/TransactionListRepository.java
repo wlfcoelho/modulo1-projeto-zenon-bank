@@ -22,5 +22,10 @@ public class TransactionListRepository implements TransactionRepository {
                         transaction.customerOrigin().getName().equals(originName))
                 .findFirst();
     }
+
+    @Override
+    public void save(Transaction transaction) {
+        this.transactionsList.add(transaction);
+    }
 }
 
