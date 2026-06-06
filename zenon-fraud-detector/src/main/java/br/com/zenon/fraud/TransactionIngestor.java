@@ -22,7 +22,7 @@ public class TransactionIngestor {
         try {
 
             List<String> lines = Files.readAllLines(path);
-            int maxSize = 100000;
+            int maxSize = 10000;
             return lines.stream()
                     .skip(1)
                     .limit(maxSize)

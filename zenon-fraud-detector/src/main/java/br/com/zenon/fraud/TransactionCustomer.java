@@ -39,4 +39,13 @@ public class TransactionCustomer {
         return newBalance;
     }
 
+    @Override
+    public String toString() {
+        return "TransactionCustomer{" +
+                "name='" + name + '\'' +
+                ", oldBalance=" + oldBalance +
+                ", newBalance=" + newBalance +
+                '}';
+    }
+
 }
