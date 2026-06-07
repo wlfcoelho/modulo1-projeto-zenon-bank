@@ -1,6 +1,8 @@
 package br.com.zenon;
 
-import br.com.zenon.fraud.*;
+import br.com.zenon.application.ingestor.EfficientTransactionIngestor;
+import br.com.zenon.infrastructure.persistence.database.ConnectionFactory;
+import br.com.zenon.infrastructure.persistence.repository.TransactionSQLRepository;
 
 import java.util.List;
 

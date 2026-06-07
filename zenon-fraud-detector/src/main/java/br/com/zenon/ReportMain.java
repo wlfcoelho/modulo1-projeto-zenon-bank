@@ -1,6 +1,6 @@
 package br.com.zenon;
 
-import br.com.zenon.fraud.TransactionReport;
+import br.com.zenon.application.report.TransactionReport;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;

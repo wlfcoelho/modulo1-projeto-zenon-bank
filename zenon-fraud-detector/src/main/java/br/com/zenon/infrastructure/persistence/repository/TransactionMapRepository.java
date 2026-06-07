@@ -1,4 +1,6 @@
-package br.com.zenon.fraud;
+package br.com.zenon.infrastructure.persistence.repository;
+
+import br.com.zenon.domain.model.Transaction;
 
 import java.util.*;
 import java.util.function.Function;
@@ -14,9 +16,7 @@ public class TransactionMapRepository implements TransactionRepository {
                 transactions.stream().
                         collect(Collectors.toMap(
                                 transaction -> transaction.customerOrigin().getName(),
-                                //Mesma função no caso abaixo os dois devolvem a transação acima.
                                 Function.identity()));
-                                // transaction -> transaction));
     }
 
     @Override
@@ -26,8 +26,7 @@ public class TransactionMapRepository implements TransactionRepository {
 
     @Override
     public void save(Transaction transaction) {
-        this.transactionsMap.putIfAbsent(transaction.customerOrigin().getName(), transaction);
+        this.transactionsMap.put(transaction.customerOrigin().getName(), transaction);
     }
 }
-
 

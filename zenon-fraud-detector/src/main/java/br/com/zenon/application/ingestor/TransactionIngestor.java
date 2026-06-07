@@ -1,15 +1,13 @@
-package br.com.zenon.fraud;
+package br.com.zenon.application.ingestor;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.foreign.SymbolLookup;
+import br.com.zenon.domain.model.Transaction;
+import br.com.zenon.domain.model.TransactionCustomer;
+import br.com.zenon.domain.model.TransactionType;
+
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -20,9 +18,8 @@ public class TransactionIngestor {
     public List<Transaction> read(String filePath) {
         Path path = Path.of(filePath);
         try {
-
             List<String> lines = Files.readAllLines(path);
-            int maxSize = 10000;
+            int maxSize = 100000;
             return lines.stream()
                     .skip(1)
                     .limit(maxSize)
@@ -30,7 +27,6 @@ public class TransactionIngestor {
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .toList();
-
         } catch (Exception e) {
             throw new RuntimeException("Error reading file: " + path, e);
         }
@@ -57,3 +53,4 @@ public class TransactionIngestor {
         }
     }
 }
+

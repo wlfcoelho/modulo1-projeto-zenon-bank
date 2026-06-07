@@ -1,4 +1,7 @@
-package br.com.zenon.fraud;
+package br.com.zenon.domain.service;
+
+import br.com.zenon.domain.model.Transaction;
+import br.com.zenon.domain.model.TransactionType;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -12,17 +15,15 @@ public class FraudAnalyzer {
 
     private final List<Transaction> transactionsList;
 
-    public  FraudAnalyzer(List<Transaction> transactionsList) {
+    public FraudAnalyzer(List<Transaction> transactionsList) {
         Objects.requireNonNull(transactionsList);
         this.transactionsList = transactionsList;
     }
-
 
     public long countFrauds() {
         return getStreamIsFraud()
                 .count();
     }
-
 
     public List<Transaction> findHighestValueFrauds(int limit) {
         return getStreamIsFraud()
@@ -38,8 +39,6 @@ public class FraudAnalyzer {
                 .distinct()
                 .limit(limit)
                 .toList();
-
-
     }
 
     public BigDecimal calculateTotalFraudsLoss() {
@@ -51,7 +50,6 @@ public class FraudAnalyzer {
     public Map<TransactionType, Long> countFraudsType() {
         return getStreamIsFraud()
                 .collect(Collectors.groupingBy(Transaction::type, Collectors.counting()));
-
     }
 
     private Stream<Transaction> getStreamIsFraud() {
@@ -59,3 +57,4 @@ public class FraudAnalyzer {
                 .filter(Transaction::isFraud);
     }
 }
+

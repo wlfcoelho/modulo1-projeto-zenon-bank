@@ -1,4 +1,4 @@
-package br.com.zenon.fraud;
+package br.com.zenon.domain.model;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -47,5 +47,5 @@ public class TransactionCustomer {
                 ", newBalance=" + newBalance +
                 '}';
     }
-
 }
+

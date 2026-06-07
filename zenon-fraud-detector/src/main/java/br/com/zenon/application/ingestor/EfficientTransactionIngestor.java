@@ -1,4 +1,8 @@
-package br.com.zenon.fraud;
+package br.com.zenon.application.ingestor;
+
+import br.com.zenon.domain.model.Transaction;
+import br.com.zenon.domain.model.TransactionCustomer;
+import br.com.zenon.domain.model.TransactionType;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -8,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -18,17 +23,19 @@ public class EfficientTransactionIngestor {
     private static final int MAX_SIZE = 10_000;
     private static final int BATCH_SIZE = 5_000;
 
+    private final Semaphore semaphoreDB = new Semaphore(100);
+
     public void readAsBatch(String filePath, Consumer<List<Transaction>> consumerList) {
         Path path = Path.of(filePath);
-        try (ExecutorService executor = Executors.newFixedThreadPool(10);
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
              Stream<String> lines = Files.lines(path).skip(1)) {
 
-            var interator = lines.iterator();
+            var iterator = lines.iterator();
 
             List<String> lineBatch = new ArrayList<>(BATCH_SIZE);
-            while (interator.hasNext()) {
+            while (iterator.hasNext()) {
 
-                String line = interator.next();
+                String line = iterator.next();
                 lineBatch.add(line);
 
                 if (lineBatch.size() >= BATCH_SIZE) {
@@ -51,7 +58,7 @@ public class EfficientTransactionIngestor {
 
     private void executeBatch(List<String> lineBatch, Consumer<List<Transaction>> consumerList) {
 
-        List<Transaction> transactionList =
+        List<Transaction> transactionBatch =
                 lineBatch
                         .stream()
                         .map(this::parseTransaction)
@@ -59,9 +66,20 @@ public class EfficientTransactionIngestor {
                         .map(Optional::get)
                         .toList();
 
-        consumerList.accept(transactionList);
-    }
+        try {
 
+            semaphoreDB.acquire();
+            try{
+                consumerList.accept(transactionBatch);
+            }finally {
+                semaphoreDB.release();
+                logger.info("Batch finalizado");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.severe("Error acquiring semaphore: " + e.getMessage());
+        }
+    }
     public void readAsStream(String filePath, Consumer<Transaction> consumer) {
         Path path = Path.of(filePath);
         try (Stream<String> lines = Files.lines(path)) {
@@ -99,3 +117,4 @@ public class EfficientTransactionIngestor {
         }
     }
 }
+

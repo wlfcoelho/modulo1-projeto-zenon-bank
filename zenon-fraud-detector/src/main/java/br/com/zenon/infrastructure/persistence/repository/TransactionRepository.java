@@ -1,4 +1,6 @@
-package br.com.zenon.fraud;
+package br.com.zenon.infrastructure.persistence.repository;
+
+import br.com.zenon.domain.model.Transaction;
 
 import java.util.Optional;
 
@@ -8,3 +10,4 @@ public interface TransactionRepository {
 
     void save(Transaction transaction);
 }
+

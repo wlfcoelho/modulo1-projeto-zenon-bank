@@ -1,5 +1,6 @@
+package br.com.zenon.infrastructure.persistence.repository;
 
-package br.com.zenon.fraud;
+import br.com.zenon.domain.model.Transaction;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,7 +17,6 @@ public class TransactionListRepository implements TransactionRepository {
 
     @Override
     public Optional<Transaction> findByOriginName(String originName) {
-
         return transactionsList.stream()
                 .filter(transaction ->
                         transaction.customerOrigin().getName().equals(originName))
