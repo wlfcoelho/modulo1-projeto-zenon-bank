@@ -5,9 +5,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
-public class TransactionSQLRepository implements TransactionRepository{
+public class TransactionSQLRepository implements TransactionRepository {
+
+    Logger logger = Logger.getLogger(TransactionSQLRepository.class.getName());
+
+    public static Integer SQL_BATCH_SIZE = 1000;
+
     @Override
     public Optional<Transaction> findByOriginName(String originName) {
 
@@ -29,10 +36,10 @@ public class TransactionSQLRepository implements TransactionRepository{
 
             try (ResultSet rs = ps.executeQuery()) {
 
-                if (rs.next()){
+                if (rs.next()) {
                     Transaction transaction = mapResultSetToTransaction(rs);
                     return Optional.of(transaction);
-                    
+
                 } else {
                     System.out.println("Nao encontrado" + originName);
                     return Optional.empty();
@@ -57,6 +64,7 @@ public class TransactionSQLRepository implements TransactionRepository{
                 (?,?,?,?,?,?,?,?,?,?,?);
                 """;
 
+        //Dessa forma, a conexão é aberta e fechada para cada transação, o que pode ser ineficiente, quando mandamos um grande volume de dados
         try (Connection conn = ConnectionFactory.createConnection();
              PreparedStatement ps = conn.prepareStatement(sql);) {
 
@@ -80,7 +88,7 @@ public class TransactionSQLRepository implements TransactionRepository{
     }
 
     private Transaction mapResultSetToTransaction(ResultSet rs) {
-        try{
+        try {
 
             int id = rs.getInt("id");
             int step = rs.getInt("step");
@@ -105,6 +113,77 @@ public class TransactionSQLRepository implements TransactionRepository{
             return new Transaction(step, type, amount, customerOrigin, recipient, isFraud, isFlaggedFraud);
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao mapear ResultSet para Transaction", e);
+        }
+    }
+
+    public void saveAll(List<Transaction> transactions) {
+        String sql = """
+                insert into transaction
+                (step,`type`, amount,
+                 name_orig, old_balance_origin, new_balance_origin, 
+                 name_recipient, old_balance_recipient, new_balance_recipient,
+                 is_fraud, is_flagged_fraud)
+                VALUES
+                (?,?,?,?,?,?,?,?,?,?,?);
+                """;
+
+        try (Connection conn = ConnectionFactory.createConnection();) {
+
+            /*
+            setAutoCommit(false) desliga o modo auto-commit da conexão: em vez de cada instrução SQL ser confirmada imediatamente, o controle de transação fica manual. Isso permite:
+            Agrupar várias operações em uma única transação atômica (ou todas são confirmadas com commit() ou todas revertidas com rollback()).
+            Evitar commits parciais em caso de erro.
+            Melhorar desempenho ao confirmar em lote (menos overhead de I/O).
+            */
+            conn.setAutoCommit(false);
+
+            int count = 0;
+
+            try (PreparedStatement ps = conn.prepareStatement(sql);) {
+
+                for (Transaction transaction : transactions) {
+
+
+                    ps.setInt(1, transaction.step());
+                    ps.setString(2, transaction.type().name());
+                    ps.setBigDecimal(3, transaction.amount());
+                    ps.setString(4, transaction.customerOrigin().getName());
+                    ps.setBigDecimal(5, transaction.customerOrigin().getOldBalance());
+                    ps.setBigDecimal(6, transaction.customerOrigin().getNewBalance());
+                    ps.setString(7, transaction.customerDestination().getName());
+                    ps.setBigDecimal(8, transaction.customerDestination().getOldBalance());
+                    ps.setBigDecimal(9, transaction.customerDestination().getNewBalance());
+                    ps.setBoolean(10, transaction.isFraud());
+                    ps.setBoolean(11, transaction.isFlaggedFraud());
+
+                    //acumula em lote o envio dos dados para o banco, o que é mais eficiente do que enviar um por um
+                    ps.addBatch();
+                    count++;
+
+                    if (count % SQL_BATCH_SIZE == 0) {
+                        logger.info("Executando batch JDBC...");
+                        ps.executeBatch();
+                        conn.commit();
+                    }
+                }
+
+                // Como if acima só faz multiplos de 1000, no caso de 1012 temos uma sobre dos 12 que será feita neste ponto
+                logger.info("Executando batch final JDBC...");
+                ps.executeBatch();
+                conn.commit();
+                conn.setAutoCommit(true);
+
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    logger.severe("Erro ao realizar rollback: " + ex.getMessage());
+                }
+                throw new RuntimeException("Erro ao salvar nova transação", e);
+            }
+        } catch (
+                SQLException e) {
+            throw new RuntimeException("Erro na conexão com o BD...", e);
         }
     }
 }
