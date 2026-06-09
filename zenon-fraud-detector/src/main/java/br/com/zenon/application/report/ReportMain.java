@@ -1,5 +1,4 @@
-package br.com.zenon;
-
+package br.com.zenon.application.report;
 
 import br.com.zenon.domain.service.TransactionReport;
 
@@ -45,3 +44,4 @@ public class ReportMain {
 
     }
 }
+
