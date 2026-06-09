@@ -1,6 +1,9 @@
 package br.com.zenon;
 
-import br.com.zenon.fraud.*;
+import br.com.zenon.application.ingestor.TransactionIngestor;
+import br.com.zenon.domain.model.Transaction;
+import br.com.zenon.infrastructure.persistence.ConnectionFactory;
+import br.com.zenon.infrastructure.persistence.TransactionSQLRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
